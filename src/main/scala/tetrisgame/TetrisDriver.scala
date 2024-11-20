@@ -8,6 +8,7 @@ import scalafx.scene.paint.Color._
 import scalafx.Includes._
 import scalafx.scene.paint.Color
 import scalafx.scene.shape.Rectangle
+import scalafx.scene.text.Text
 import tetrisgame.TetrisBoard
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -17,12 +18,19 @@ import scala.util.Random
 object TetrisDriver extends JFXApp3 {
   private val board = TetrisBoard
   private val blockSize = 25
+  private val scoreText = new Text {
+    x = 10
+    y = 20
+    text = s"Score: ${board.score}"
+    fill = Black
+    style = "-fx-font-size: 16pt;"
+  }
 
   def gameLoop(): Unit = {
     Future {
       board.moveCurrentPieceDown()
       updateScene()
-      Thread.sleep(500)
+      Thread.sleep(250)
     }.flatMap(_ => Future(gameLoop()))
   }
 
@@ -46,18 +54,19 @@ object TetrisDriver extends JFXApp3 {
     val tempBoard = board.mergePieceToBoard()
 
     tempBoard.zipWithIndex.flatMap { case (row, y) =>
-      val currentColor = randomColor()
+      var pieceColor = randomColor()
       row.zipWithIndex.collect {
         case (1, x) =>
-          block(x * blockSize, y * blockSize, currentColor)
+          block(x * blockSize, y * blockSize, pieceColor)
       }
     }
   }
 
   def updateScene(): Unit = {
+    scoreText.text = s"Score: ${board.score}"
     Platform.runLater {
       val newContent = renderBoard()
-      stage.scene().content = newContent
+      stage.scene().content = newContent :+ scoreText
     }
   }
 
@@ -72,7 +81,10 @@ object TetrisDriver extends JFXApp3 {
           event.code match {
             case KeyCode.Left => board.moveCurrentPieceLeft()
             case KeyCode.Right => board.moveCurrentPieceRight()
-            case KeyCode.Down => board.moveCurrentPieceDown()
+            case KeyCode.Down => {
+              board.moveCurrentPieceDown()
+              board.score += 5
+            }
             case KeyCode.Up => board.rotateCurrentPiece()
             case _ => // ignore
           }

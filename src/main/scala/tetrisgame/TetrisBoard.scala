@@ -9,6 +9,7 @@ import scala.util.Random
 object TetrisBoard {
   val rows: Int = 20
   val columns: Int = 10
+  var score: Int = 0
   var gameBoard: Array[Array[Int]] = Array.fill(rows, columns)(0)
   var tetrisPieces: Array[TetrisPiece] = Array(LShapePiece(), TShapePiece(), OShapePiece(), IShapePiece(), JShapePiece(), SShapePiece(), ZShapePiece())
   var currentPiece: TetrisPiece = generateNewPiece()
@@ -61,6 +62,7 @@ object TetrisBoard {
       clearBoard()
     } else {
       gameBoard = mergePieceToBoard()
+      score += 5
       clearFullRows()
       currentPiece = generateNewPiece()
     }
@@ -104,20 +106,14 @@ object TetrisBoard {
     }
   }
 
-  def endGame(): Boolean = {
-    var isFullRow = true
-    if (gameBoard(0)(4) == 0) {
-      isFullRow = false
-    }
-    isFullRow
-  }
-
   def clearBoard(): Unit = {
+    Thread.sleep(5000)
     gameBoard.zipWithIndex.foreach { case (row, rowIdx) =>
       row.zipWithIndex.foreach { case (value ,colIdx) =>
         gameBoard(rowIdx)(colIdx) = 0
       }
     }
+    score = 0
   }
 
   def clearFullRows(): Unit = {
@@ -133,6 +129,7 @@ object TetrisBoard {
         for (element <- gameBoard(row).indices) {
           gameBoard(row)(element) = 0
         }
+        score += 300
         shiftRowsDown(row)
       }
     }
